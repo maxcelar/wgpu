@@ -42,6 +42,10 @@ Bottom level categories:
 
 ## Unreleased
 
+### New Features
+
+- Added `Device::create_render_pipeline_async` and `Device::create_compute_pipeline_async`. On the WebGPU backend they call `createRenderPipelineAsync()`/`createComputePipelineAsync()`, which let the browser compile the pipeline off the GPU process' main thread. On every backend, validation and internal failures are reported through the returned future instead of the error scope. On native backends the pipeline is still created synchronously and the returned future is already resolved. Resolves [#3794](https://github.com/gfx-rs/wgpu/issues/3794). By @abdymazhit in [#10438](https://github.com/gfx-rs/wgpu/pull/10438).
+
 ## v30.0.1 (2026-08-21)
 
 ### Bug Fixes

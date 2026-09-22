@@ -1338,79 +1338,13 @@ impl dispatch::DeviceInterface for CoreDevice {
         &self,
         desc: &crate::RenderPipelineDescriptor<'_>,
     ) -> dispatch::DispatchRenderPipeline {
-        use wgc::pipeline as pipe;
-
-        let vertex_buffers: ArrayVec<_, { wgc::MAX_VERTEX_BUFFERS }> = desc
-            .vertex
-            .buffers
-            .iter()
-            .map(|vbuf| {
-                vbuf.as_ref().map(|vbuf| pipe::VertexBufferLayout {
-                    array_stride: vbuf.array_stride,
-                    step_mode: vbuf.step_mode,
-                    attributes: Borrowed(vbuf.attributes),
-                })
-            })
-            .collect();
-
-        let vert_constants = desc
-            .vertex
-            .compilation_options
-            .constants
-            .iter()
-            .map(|&(key, value)| (String::from(key), value))
-            .collect();
-
-        let descriptor = pipe::RenderPipelineDescriptor {
-            label: desc.label.map(Borrowed),
-            layout: desc.layout.map(|layout| layout.inner.as_core().id),
-            vertex: pipe::VertexState {
-                stage: pipe::ProgrammableStageDescriptor {
-                    module: desc.vertex.module.inner.as_core().id,
-                    entry_point: desc.vertex.entry_point.map(Borrowed),
-                    constants: vert_constants,
-                    zero_initialize_workgroup_memory: desc
-                        .vertex
-                        .compilation_options
-                        .zero_initialize_workgroup_memory,
-                },
-                buffers: Borrowed(&vertex_buffers),
-            },
-            primitive: desc.primitive,
-            depth_stencil: desc.depth_stencil.clone(),
-            multisample: desc.multisample,
-            fragment: desc.fragment.as_ref().map(|frag| {
-                let frag_constants = frag
-                    .compilation_options
-                    .constants
-                    .iter()
-                    .map(|&(key, value)| (String::from(key), value))
-                    .collect();
-                pipe::FragmentState {
-                    stage: pipe::ProgrammableStageDescriptor {
-                        module: frag.module.inner.as_core().id,
-                        entry_point: frag.entry_point.map(Borrowed),
-                        constants: frag_constants,
-                        zero_initialize_workgroup_memory: frag
-                            .compilation_options
-                            .zero_initialize_workgroup_memory,
-                    },
-                    targets: Borrowed(frag.targets),
-                }
-            }),
-            multiview_mask: desc.multiview_mask,
-            cache: desc.cache.map(|cache| cache.inner.as_core().id),
-        };
-
-        let (id, error) = self
-            .context
-            .0
-            .device_create_render_pipeline(self.id, &descriptor, None);
+        let (id, error) = with_render_pipeline_descriptor(desc, |descriptor| {
+            self.context
+                .0
+                .device_create_render_pipeline(self.id, &descriptor, None)
+        });
         if let Some(cause) = error {
-            if let wgc::pipeline::CreateRenderPipelineError::Internal { stage, ref error } = cause {
-                log::error!("Shader translation error for stage {stage:?}: {error}");
-                log::error!("Please report it to https://github.com/gfx-rs/wgpu");
-            }
+            log_render_shader_translation_error(&cause);
             self.context.handle_error(
                 &self.error_sink,
                 cause,
@@ -1424,6 +1358,42 @@ impl dispatch::DeviceInterface for CoreDevice {
             error_sink: Arc::clone(&self.error_sink),
         }
         .into()
+    }
+
+    fn create_render_pipeline_async(
+        &self,
+        desc: &crate::RenderPipelineDescriptor<'_>,
+    ) -> Pin<Box<dyn dispatch::CreateRenderPipelineFuture>> {
+        let (id, error) = with_render_pipeline_descriptor(desc, |descriptor| {
+            self.context
+                .0
+                .device_create_render_pipeline(self.id, &descriptor, None)
+        });
+        let pipeline = CoreRenderPipeline {
+            context: self.context.clone(),
+            id,
+            error_sink: Arc::clone(&self.error_sink),
+        };
+        let result = match error {
+            None => Ok(pipeline.into()),
+            // A lost device resolves to an invalid pipeline, as upstream's
+            // `create_render_pipeline_or_error` does; the loss surfaces via the device callback.
+            Some(cause) if cause.webgpu_error_type() == ErrorType::DeviceLost => {
+                Ok(pipeline.into())
+            }
+            // Any other failure is the future's `Err`, and nothing is raised on the device.
+            Some(cause) => {
+                log_render_shader_translation_error(&cause);
+                drop(pipeline);
+                Err(pipeline_error(
+                    &self.context,
+                    cause,
+                    desc.label,
+                    "Device::create_render_pipeline_async",
+                ))
+            }
+        };
+        Box::pin(ready(result))
     }
 
     fn create_mesh_pipeline(
@@ -1526,42 +1496,13 @@ impl dispatch::DeviceInterface for CoreDevice {
         &self,
         desc: &crate::ComputePipelineDescriptor<'_>,
     ) -> dispatch::DispatchComputePipeline {
-        use wgc::pipeline as pipe;
-
-        let constants = desc
-            .compilation_options
-            .constants
-            .iter()
-            .map(|&(key, value)| (String::from(key), value))
-            .collect();
-
-        let descriptor = pipe::ComputePipelineDescriptor {
-            label: desc.label.map(Borrowed),
-            layout: desc.layout.map(|pll| pll.inner.as_core().id),
-            stage: pipe::ProgrammableStageDescriptor {
-                module: desc.module.inner.as_core().id,
-                entry_point: desc.entry_point.map(Borrowed),
-                constants,
-                zero_initialize_workgroup_memory: desc
-                    .compilation_options
-                    .zero_initialize_workgroup_memory,
-            },
-            cache: desc.cache.map(|cache| cache.inner.as_core().id),
-        };
-
+        let descriptor = map_compute_pipeline_descriptor(desc);
         let (id, error) = self
             .context
             .0
             .device_create_compute_pipeline(self.id, &descriptor, None);
         if let Some(cause) = error {
-            if let wgc::pipeline::CreateComputePipelineError::Internal(ref error) = cause {
-                log::error!(
-                    "Shader translation error for stage {:?}: {}",
-                    wgt::ShaderStages::COMPUTE,
-                    error
-                );
-                log::error!("Please report it to https://github.com/gfx-rs/wgpu");
-            }
+            log_compute_shader_translation_error(&cause);
             self.context.handle_error(
                 &self.error_sink,
                 cause,
@@ -1575,6 +1516,42 @@ impl dispatch::DeviceInterface for CoreDevice {
             error_sink: Arc::clone(&self.error_sink),
         }
         .into()
+    }
+
+    fn create_compute_pipeline_async(
+        &self,
+        desc: &crate::ComputePipelineDescriptor<'_>,
+    ) -> Pin<Box<dyn dispatch::CreateComputePipelineFuture>> {
+        let descriptor = map_compute_pipeline_descriptor(desc);
+        let (id, error) = self
+            .context
+            .0
+            .device_create_compute_pipeline(self.id, &descriptor, None);
+        let pipeline = CoreComputePipeline {
+            context: self.context.clone(),
+            id,
+            error_sink: Arc::clone(&self.error_sink),
+        };
+        let result = match error {
+            None => Ok(pipeline.into()),
+            // A lost device resolves to an invalid pipeline, as upstream's
+            // `create_compute_pipeline_or_error` does; the loss surfaces via the device callback.
+            Some(cause) if cause.webgpu_error_type() == ErrorType::DeviceLost => {
+                Ok(pipeline.into())
+            }
+            // Any other failure is the future's `Err`, and nothing is raised on the device.
+            Some(cause) => {
+                log_compute_shader_translation_error(&cause);
+                drop(pipeline);
+                Err(pipeline_error(
+                    &self.context,
+                    cause,
+                    desc.label,
+                    "Device::create_compute_pipeline_async",
+                ))
+            }
+        };
+        Box::pin(ready(result))
     }
 
     unsafe fn create_pipeline_cache(
@@ -4113,5 +4090,154 @@ impl dispatch::BufferMappedRangeInterface for CoreBufferMappedRange {
     #[cfg(webgpu)]
     fn as_uint8array(&self) -> &js_sys::Uint8Array {
         panic!("Only available on WebGPU")
+    }
+}
+
+/// Maps a render pipeline descriptor to its wgpu-core form and passes it to `f`.
+///
+/// The wgpu-core descriptor borrows the vertex buffer layouts collected here, so it can't be
+/// returned.
+fn with_render_pipeline_descriptor<R>(
+    desc: &crate::RenderPipelineDescriptor<'_>,
+    f: impl FnOnce(wgc::pipeline::RenderPipelineDescriptor<'_>) -> R,
+) -> R {
+    use wgc::pipeline as pipe;
+
+    let vertex_buffers: ArrayVec<_, { wgc::MAX_VERTEX_BUFFERS }> = desc
+        .vertex
+        .buffers
+        .iter()
+        .map(|vbuf| {
+            vbuf.as_ref().map(|vbuf| pipe::VertexBufferLayout {
+                array_stride: vbuf.array_stride,
+                step_mode: vbuf.step_mode,
+                attributes: Borrowed(vbuf.attributes),
+            })
+        })
+        .collect();
+
+    let vert_constants = desc
+        .vertex
+        .compilation_options
+        .constants
+        .iter()
+        .map(|&(key, value)| (String::from(key), value))
+        .collect();
+
+    let descriptor = pipe::RenderPipelineDescriptor {
+        label: desc.label.map(Borrowed),
+        layout: desc.layout.map(|layout| layout.inner.as_core().id),
+        vertex: pipe::VertexState {
+            stage: pipe::ProgrammableStageDescriptor {
+                module: desc.vertex.module.inner.as_core().id,
+                entry_point: desc.vertex.entry_point.map(Borrowed),
+                constants: vert_constants,
+                zero_initialize_workgroup_memory: desc
+                    .vertex
+                    .compilation_options
+                    .zero_initialize_workgroup_memory,
+            },
+            buffers: Borrowed(&vertex_buffers),
+        },
+        primitive: desc.primitive,
+        depth_stencil: desc.depth_stencil.clone(),
+        multisample: desc.multisample,
+        fragment: desc.fragment.as_ref().map(|frag| {
+            let frag_constants = frag
+                .compilation_options
+                .constants
+                .iter()
+                .map(|&(key, value)| (String::from(key), value))
+                .collect();
+            pipe::FragmentState {
+                stage: pipe::ProgrammableStageDescriptor {
+                    module: frag.module.inner.as_core().id,
+                    entry_point: frag.entry_point.map(Borrowed),
+                    constants: frag_constants,
+                    zero_initialize_workgroup_memory: frag
+                        .compilation_options
+                        .zero_initialize_workgroup_memory,
+                },
+                targets: Borrowed(frag.targets),
+            }
+        }),
+        multiview_mask: desc.multiview_mask,
+        cache: desc.cache.map(|cache| cache.inner.as_core().id),
+    };
+
+    f(descriptor)
+}
+
+fn map_compute_pipeline_descriptor<'a>(
+    desc: &crate::ComputePipelineDescriptor<'a>,
+) -> wgc::pipeline::ComputePipelineDescriptor<'a> {
+    use wgc::pipeline as pipe;
+
+    let constants = desc
+        .compilation_options
+        .constants
+        .iter()
+        .map(|&(key, value)| (String::from(key), value))
+        .collect();
+
+    pipe::ComputePipelineDescriptor {
+        label: desc.label.map(Borrowed),
+        layout: desc.layout.map(|pll| pll.inner.as_core().id),
+        stage: pipe::ProgrammableStageDescriptor {
+            module: desc.module.inner.as_core().id,
+            entry_point: desc.entry_point.map(Borrowed),
+            constants,
+            zero_initialize_workgroup_memory: desc
+                .compilation_options
+                .zero_initialize_workgroup_memory,
+        },
+        cache: desc.cache.map(|cache| cache.inner.as_core().id),
+    }
+}
+
+fn log_render_shader_translation_error(cause: &wgc::pipeline::CreateRenderPipelineError) {
+    if let wgc::pipeline::CreateRenderPipelineError::Internal { stage, ref error } = *cause {
+        log::error!("Shader translation error for stage {stage:?}: {error}");
+        log::error!("Please report it to https://github.com/gfx-rs/wgpu");
+    }
+}
+
+fn log_compute_shader_translation_error(cause: &wgc::pipeline::CreateComputePipelineError) {
+    if let wgc::pipeline::CreateComputePipelineError::Internal(ref error) = *cause {
+        log::error!(
+            "Shader translation error for stage {:?}: {}",
+            wgt::ShaderStages::COMPUTE,
+            error
+        );
+        log::error!("Please report it to https://github.com/gfx-rs/wgpu");
+    }
+}
+
+/// Converts a pipeline creation error into the [`crate::Error`] that an asynchronous pipeline
+/// creation resolves to, in the same form that the error scopes would have received it.
+fn pipeline_error(
+    context: &ContextWgpuCore,
+    err: impl WebGpuError + WasmNotSendSync + 'static,
+    label: Option<&str>,
+    fn_ident: &'static str,
+) -> crate::Error {
+    let error_type = err.webgpu_error_type();
+    let source: ErrorSource = Box::new(wgc::error::ContextError {
+        fn_ident,
+        source: Box::new(err),
+        label: label.unwrap_or_default().to_string(),
+    });
+    match error_type {
+        ErrorType::OutOfMemory => crate::Error::OutOfMemory { source },
+        ErrorType::Validation => crate::Error::Validation {
+            description: context.format_error(&*source),
+            source,
+        },
+        // A lost device resolves to an invalid pipeline before this is called, so this is only
+        // reached by internal errors.
+        ErrorType::Internal | ErrorType::DeviceLost => crate::Error::Internal {
+            description: context.format_error(&*source),
+            source,
+        },
     }
 }
