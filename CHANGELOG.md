@@ -42,6 +42,10 @@ Bottom level categories:
 
 ## Unreleased
 
+### Added
+
+- Backport of [#10438](https://github.com/gfx-rs/wgpu/pull/10438) onto v30.0.1: `Device::create_render_pipeline_async` and `Device::create_compute_pipeline_async`. On WebGPU they call `createRenderPipelineAsync()`/`createComputePipelineAsync()` and report failures through the returned future; on every other backend the pipeline is created synchronously and the future is already resolved.
+
 ## v30.0.1 (2026-08-21)
 
 ### Bug Fixes
