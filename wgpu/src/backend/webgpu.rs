@@ -933,7 +933,190 @@ fn map_js_sys_limits(limits: &wgt::Limits) -> js_sys::Object {
     object
 }
 
+fn map_render_pipeline_descriptor(
+    desc: &crate::RenderPipelineDescriptor<'_>,
+) -> webgpu_sys::GpuRenderPipelineDescriptor {
+    let module = desc.vertex.module.inner.as_webgpu();
+    let mapped_vertex_state = webgpu_sys::GpuVertexState::new(&module.module);
+    insert_constants_map(
+        &mapped_vertex_state,
+        desc.vertex.compilation_options.constants,
+    );
+    if let Some(ep) = desc.vertex.entry_point {
+        mapped_vertex_state.set_entry_point(ep);
+    }
+
+    let buffers = desc
+        .vertex
+        .buffers
+        .iter()
+        .map(|vbuf| {
+            let mapped_attributes = vbuf
+                .attributes
+                .iter()
+                .map(|attr| {
+                    webgpu_sys::GpuVertexAttribute::new(
+                        map_vertex_format(attr.format),
+                        attr.offset as f64,
+                        attr.shader_location,
+                    )
+                })
+                .collect::<js_sys::Array>();
+
+            let mapped_vbuf = webgpu_sys::GpuVertexBufferLayout::new(
+                vbuf.array_stride as f64,
+                &mapped_attributes,
+            );
+            mapped_vbuf.set_step_mode(map_vertex_step_mode(vbuf.step_mode));
+            mapped_vbuf
+        })
+        .collect::<js_sys::Array>();
+
+    mapped_vertex_state.set_buffers(&buffers);
+
+    let auto_layout = wasm_bindgen::JsValue::from(webgpu_sys::GpuAutoLayoutMode::Auto);
+    let mapped_desc = webgpu_sys::GpuRenderPipelineDescriptor::new(
+        &match desc.layout {
+            Some(layout) => {
+                let layout = &layout.inner.as_webgpu().inner;
+                JsValue::from(layout)
+            }
+            None => auto_layout,
+        },
+        &mapped_vertex_state,
+    );
+
+    if let Some(label) = desc.label {
+        mapped_desc.set_label(label);
+    }
+
+    if let Some(ref depth_stencil) = desc.depth_stencil {
+        mapped_desc.set_depth_stencil(&map_depth_stencil_state(depth_stencil));
+    }
+
+    if let Some(ref frag) = desc.fragment {
+        let targets = frag
+            .targets
+            .iter()
+            .map(|target| match target {
+                Some(target) => {
+                    let mapped_format = map_texture_format(target.format);
+                    let mapped_color_state = webgpu_sys::GpuColorTargetState::new(mapped_format);
+                    if let Some(ref bs) = target.blend {
+                        let alpha = map_blend_component(&bs.alpha);
+                        let color = map_blend_component(&bs.color);
+                        let mapped_blend_state = webgpu_sys::GpuBlendState::new(&alpha, &color);
+                        mapped_color_state.set_blend(&mapped_blend_state);
+                    }
+                    mapped_color_state.set_write_mask(target.write_mask.bits());
+                    wasm_bindgen::JsValue::from(mapped_color_state)
+                }
+                None => wasm_bindgen::JsValue::null(),
+            })
+            .collect::<js_sys::Array>();
+        let module = frag.module.inner.as_webgpu();
+        let mapped_fragment_desc = webgpu_sys::GpuFragmentState::new(&module.module, &targets);
+        insert_constants_map(&mapped_fragment_desc, frag.compilation_options.constants);
+        if let Some(ep) = frag.entry_point {
+            mapped_fragment_desc.set_entry_point(ep);
+        }
+        mapped_desc.set_fragment(&mapped_fragment_desc);
+    }
+
+    let mapped_multisample = webgpu_sys::GpuMultisampleState::new();
+    mapped_multisample.set_count(desc.multisample.count);
+    mapped_multisample.set_mask(desc.multisample.mask as u32);
+    mapped_multisample.set_alpha_to_coverage_enabled(desc.multisample.alpha_to_coverage_enabled);
+    mapped_desc.set_multisample(&mapped_multisample);
+
+    let mapped_primitive = map_primitive_state(&desc.primitive);
+    mapped_desc.set_primitive(&mapped_primitive);
+
+    mapped_desc
+}
+
+fn map_compute_pipeline_descriptor(
+    desc: &crate::ComputePipelineDescriptor<'_>,
+) -> webgpu_sys::GpuComputePipelineDescriptor {
+    let shader_module = desc.module.inner.as_webgpu();
+    let mapped_compute_stage = webgpu_sys::GpuProgrammableStage::new(&shader_module.module);
+    insert_constants_map(&mapped_compute_stage, desc.compilation_options.constants);
+    if let Some(ep) = desc.entry_point {
+        mapped_compute_stage.set_entry_point(ep);
+    }
+    let auto_layout = wasm_bindgen::JsValue::from(webgpu_sys::GpuAutoLayoutMode::Auto);
+    let mapped_desc = webgpu_sys::GpuComputePipelineDescriptor::new(
+        &match desc.layout {
+            Some(layout) => {
+                let layout = &layout.inner.as_webgpu().inner;
+                JsValue::from(layout)
+            }
+            None => auto_layout,
+        },
+        &mapped_compute_stage,
+    );
+    if let Some(label) = desc.label {
+        mapped_desc.set_label(label);
+    }
+
+    mapped_desc
+}
+
 type JsFutureResult = Result<wasm_bindgen::JsValue, wasm_bindgen::JsValue>;
+
+fn future_create_render_pipeline(
+    result: JsFutureResult,
+) -> Result<dispatch::DispatchRenderPipeline, crate::Error> {
+    result
+        .map(|js_value| {
+            WebRenderPipeline {
+                inner: webgpu_sys::GpuRenderPipeline::from(js_value),
+                ident: crate::cmp::Identifier::create(),
+            }
+            .into()
+        })
+        .map_err(pipeline_error_from_js)
+}
+
+fn future_create_compute_pipeline(
+    result: JsFutureResult,
+) -> Result<dispatch::DispatchComputePipeline, crate::Error> {
+    result
+        .map(|js_value| {
+            WebComputePipeline {
+                inner: webgpu_sys::GpuComputePipeline::from(js_value),
+                ident: crate::cmp::Identifier::create(),
+            }
+            .into()
+        })
+        .map_err(pipeline_error_from_js)
+}
+
+/// Maps the rejection of `create*PipelineAsync()` to an [`crate::Error`].
+///
+/// The specification rejects with a `GPUPipelineError` whose `reason` is `"validation"` or
+/// `"internal"`. It is read reflectively so that a browser which predates `GPUPipelineError`
+/// (and rejects with a plain `TypeError`/`OperationError`) is reported as internal rather than
+/// misfiled as a validation error.
+fn pipeline_error_from_js(value: JsValue) -> crate::Error {
+    let source = Box::<dyn core::error::Error + Send + Sync>::from("<WebGPU Error>");
+    let field = |name: &str| {
+        js_sys::Reflect::get(&value, &JsValue::from_str(name))
+            .ok()
+            .and_then(|v| v.as_string())
+    };
+    let description = field("message").unwrap_or_else(|| format!("{value:?}"));
+    match field("reason").as_deref() {
+        Some("validation") => crate::Error::Validation {
+            source,
+            description,
+        },
+        _ => crate::Error::Internal {
+            source,
+            description,
+        },
+    }
+}
 
 fn future_request_adapter(
     result: JsFutureResult,
@@ -2164,103 +2347,7 @@ impl dispatch::DeviceInterface for WebDevice {
         &self,
         desc: &crate::RenderPipelineDescriptor<'_>,
     ) -> dispatch::DispatchRenderPipeline {
-        let module = desc.vertex.module.inner.as_webgpu();
-        let mapped_vertex_state = webgpu_sys::GpuVertexState::new(&module.module);
-        insert_constants_map(
-            &mapped_vertex_state,
-            desc.vertex.compilation_options.constants,
-        );
-        if let Some(ep) = desc.vertex.entry_point {
-            mapped_vertex_state.set_entry_point(ep);
-        }
-
-        let buffers = desc
-            .vertex
-            .buffers
-            .iter()
-            .map(|vbuf| {
-                let mapped_attributes = vbuf
-                    .attributes
-                    .iter()
-                    .map(|attr| {
-                        webgpu_sys::GpuVertexAttribute::new(
-                            map_vertex_format(attr.format),
-                            attr.offset as f64,
-                            attr.shader_location,
-                        )
-                    })
-                    .collect::<js_sys::Array>();
-
-                let mapped_vbuf = webgpu_sys::GpuVertexBufferLayout::new(
-                    vbuf.array_stride as f64,
-                    &mapped_attributes,
-                );
-                mapped_vbuf.set_step_mode(map_vertex_step_mode(vbuf.step_mode));
-                mapped_vbuf
-            })
-            .collect::<js_sys::Array>();
-
-        mapped_vertex_state.set_buffers(&buffers);
-
-        let auto_layout = wasm_bindgen::JsValue::from(webgpu_sys::GpuAutoLayoutMode::Auto);
-        let mapped_desc = webgpu_sys::GpuRenderPipelineDescriptor::new(
-            &match desc.layout {
-                Some(layout) => {
-                    let layout = &layout.inner.as_webgpu().inner;
-                    JsValue::from(layout)
-                }
-                None => auto_layout,
-            },
-            &mapped_vertex_state,
-        );
-
-        if let Some(label) = desc.label {
-            mapped_desc.set_label(label);
-        }
-
-        if let Some(ref depth_stencil) = desc.depth_stencil {
-            mapped_desc.set_depth_stencil(&map_depth_stencil_state(depth_stencil));
-        }
-
-        if let Some(ref frag) = desc.fragment {
-            let targets = frag
-                .targets
-                .iter()
-                .map(|target| match target {
-                    Some(target) => {
-                        let mapped_format = map_texture_format(target.format);
-                        let mapped_color_state =
-                            webgpu_sys::GpuColorTargetState::new(mapped_format);
-                        if let Some(ref bs) = target.blend {
-                            let alpha = map_blend_component(&bs.alpha);
-                            let color = map_blend_component(&bs.color);
-                            let mapped_blend_state = webgpu_sys::GpuBlendState::new(&alpha, &color);
-                            mapped_color_state.set_blend(&mapped_blend_state);
-                        }
-                        mapped_color_state.set_write_mask(target.write_mask.bits());
-                        wasm_bindgen::JsValue::from(mapped_color_state)
-                    }
-                    None => wasm_bindgen::JsValue::null(),
-                })
-                .collect::<js_sys::Array>();
-            let module = frag.module.inner.as_webgpu();
-            let mapped_fragment_desc = webgpu_sys::GpuFragmentState::new(&module.module, &targets);
-            insert_constants_map(&mapped_fragment_desc, frag.compilation_options.constants);
-            if let Some(ep) = frag.entry_point {
-                mapped_fragment_desc.set_entry_point(ep);
-            }
-            mapped_desc.set_fragment(&mapped_fragment_desc);
-        }
-
-        let mapped_multisample = webgpu_sys::GpuMultisampleState::new();
-        mapped_multisample.set_count(desc.multisample.count);
-        mapped_multisample.set_mask(desc.multisample.mask as u32);
-        mapped_multisample
-            .set_alpha_to_coverage_enabled(desc.multisample.alpha_to_coverage_enabled);
-        mapped_desc.set_multisample(&mapped_multisample);
-
-        let mapped_primitive = map_primitive_state(&desc.primitive);
-        mapped_desc.set_primitive(&mapped_primitive);
+        let mapped_desc = map_render_pipeline_descriptor(desc);
 
         let render_pipeline = self.inner.create_render_pipeline(&mapped_desc).unwrap();
 
@@ -2269,6 +2356,18 @@ impl dispatch::DeviceInterface for WebDevice {
             ident: crate::cmp::Identifier::create(),
         }
         .into()
+    }
+
+    fn create_render_pipeline_async(
+        &self,
+        desc: &crate::RenderPipelineDescriptor<'_>,
+    ) -> Pin<Box<dyn dispatch::CreateRenderPipelineFuture>> {
+        let mapped_desc = map_render_pipeline_descriptor(desc);
+        let pipeline_promise = self.inner.create_render_pipeline_async(&mapped_desc);
+        Box::pin(MakeSendFuture::new(
+            wasm_bindgen_futures::JsFuture::from(pipeline_promise),
+            future_create_render_pipeline,
+        ))
     }
 
     fn create_mesh_pipeline(
@@ -2282,26 +2381,7 @@ impl dispatch::DeviceInterface for WebDevice {
         &self,
         desc: &crate::ComputePipelineDescriptor<'_>,
     ) -> dispatch::DispatchComputePipeline {
-        let shader_module = desc.module.inner.as_webgpu();
-        let mapped_compute_stage = webgpu_sys::GpuProgrammableStage::new(&shader_module.module);
-        insert_constants_map(&mapped_compute_stage, desc.compilation_options.constants);
-        if let Some(ep) = desc.entry_point {
-            mapped_compute_stage.set_entry_point(ep);
-        }
-        let auto_layout = wasm_bindgen::JsValue::from(webgpu_sys::GpuAutoLayoutMode::Auto);
-        let mapped_desc = webgpu_sys::GpuComputePipelineDescriptor::new(
-            &match desc.layout {
-                Some(layout) => {
-                    let layout = &layout.inner.as_webgpu().inner;
-                    JsValue::from(layout)
-                }
-                None => auto_layout,
-            },
-            &mapped_compute_stage,
-        );
-        if let Some(label) = desc.label {
-            mapped_desc.set_label(label);
-        }
+        let mapped_desc = map_compute_pipeline_descriptor(desc);
 
         let compute_pipeline = self.inner.create_compute_pipeline(&mapped_desc);
 
@@ -2310,6 +2390,18 @@ impl dispatch::DeviceInterface for WebDevice {
             ident: crate::cmp::Identifier::create(),
         }
         .into()
+    }
+
+    fn create_compute_pipeline_async(
+        &self,
+        desc: &crate::ComputePipelineDescriptor<'_>,
+    ) -> Pin<Box<dyn dispatch::CreateComputePipelineFuture>> {
+        let mapped_desc = map_compute_pipeline_descriptor(desc);
+        let pipeline_promise = self.inner.create_compute_pipeline_async(&mapped_desc);
+        Box::pin(MakeSendFuture::new(
+            wasm_bindgen_futures::JsFuture::from(pipeline_promise),
+            future_create_compute_pipeline,
+        ))
     }
 
     unsafe fn create_pipeline_cache(
