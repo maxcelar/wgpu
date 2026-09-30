@@ -698,6 +698,44 @@ impl<'a, W: fmt::Write> super::Writer<'a, W> {
             if let Some(ref binding) = m.binding {
                 self.write_modifier(binding)?;
             }
+            // `@builtin(clip_distances)` / `cull_distances` is an `array<f32, N>`
+            // in the IR, but a D3D signature packs these system values into at
+            // most two 4-component rows: an HLSL `float d[N] : SV_ClipDistance`
+            // spends one row per element, and DXC refuses it past two ("Failed
+            // to allocate all output signature elements"). So the interface
+            // member is declared as packed vectors, `SV_ClipDistance0` then
+            // `SV_ClipDistance1`. The value is written by the entry point's
+            // aggregate initializer, which flattens the IR array across them.
+            if let (
+                Some(crate::Binding::BuiltIn(
+                    builtin @ (crate::BuiltIn::ClipDistances | crate::BuiltIn::CullDistance),
+                )),
+                TypeInner::Array {
+                    size: crate::ArraySize::Constant(size),
+                    ..
+                },
+            ) = (&m.binding, &module.types[m.ty].inner)
+            {
+                // Both builtins always have a semantic (`conv.rs`); `None` is for mesh-shader
+                // virtual builtins, which never reach this arm.
+                let semantic = builtin.to_hlsl_str()?.ok_or_else(|| {
+                    Error::Unimplemented(format!("{builtin:?} has no HLSL semantic"))
+                })?;
+                let mut remaining = size.get();
+                let mut row = 0;
+                while remaining > 0 {
+                    let width = remaining.min(4);
+                    if row > 0 {
+                        write!(self.out, "{}", back::INDENT)?;
+                    }
+                    let ty = if width == 1 { "float".to_string() } else { format!("float{width}") };
+                    let name = if row == 0 { m.name.clone() } else { format!("{}_{row}", m.name) };
+                    writeln!(self.out, "{ty} {name} : {semantic}{row};")?;
+                    remaining -= width;
+                    row += 1;
+                }
+                continue;
+            }
             self.write_type(module, m.ty)?;
             write!(self.out, " {}", &m.name)?;
             self.write_semantic(&m.binding, Some(shader_stage))?;
