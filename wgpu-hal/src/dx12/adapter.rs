@@ -477,6 +477,8 @@ impl super::Adapter {
             | wgt::Features::PRIMITIVE_INDEX
             | wgt::Features::RG11B10UFLOAT_RENDERABLE
             | wgt::Features::DUAL_SOURCE_BLENDING
+            // `SV_ClipDistance`: every feature level wgpu accepts (11_0+) has it.
+            | wgt::Features::CLIP_DISTANCES
             | wgt::Features::TEXTURE_FORMAT_NV12
             | wgt::Features::FLOAT32_FILTERABLE
             | wgt::Features::TEXTURE_ATOMIC

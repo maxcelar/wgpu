@@ -1051,6 +1051,8 @@ impl super::CapabilitiesQuery {
 
         features.set(F::FLOAT32_FILTERABLE, self.supports_float_filtering);
         features.set(F::FLOAT32_BLENDABLE, true);
+        // `[[clip_distance]]` is core MSL; naga's MSL writer already emits it.
+        features.set(F::CLIP_DISTANCES, true);
         features.set(F::INDIRECT_FIRST_INSTANCE, self.indirect_draw_dispatch);
         features.set(
             F::TIMESTAMP_QUERY | F::TIMESTAMP_QUERY_INSIDE_ENCODERS,
