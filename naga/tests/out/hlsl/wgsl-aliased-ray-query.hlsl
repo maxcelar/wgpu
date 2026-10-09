@@ -78,10 +78,10 @@ void main_candidate()
     RayQuery<RAY_FLAG_NONE> rq_1;
     uint naga_query_init_tracker_for_rq_1 = 0;
 
-    float3 pos = (0.0).xxx;
-    float3 dir = float3(0.0, 1.0, 0.0);
+    float3 pos = (0.0f).xxx;
+    float3 dir = float3(0.0f, 1.0f, 0.0f);
     {
-        RayDesc_ naga_desc = ConstructRayDesc_(4u, 255u, 0.1, 100.0, pos, dir);
+        RayDesc_ naga_desc = ConstructRayDesc_(4u, 255u, 0.1f, 100.0f, pos, dir);
         float naga_tmin = naga_desc.tmin;
         float naga_tmax = naga_desc.tmax;
         float3 naga_origin = naga_desc.origin;
@@ -113,8 +113,8 @@ void main_candidate()
             CANDIDATE_TYPE naga_kind = rq_1.CandidateType();
             float naga_tmin = rq_1.RayTMin();
             float naga_tcurrentmax = rq_1.CommittedRayT();
-            if ((naga_kind == CANDIDATE_PROCEDURAL_PRIMITIVE) && (naga_tmin <=10.0) && (10.0 <= naga_tcurrentmax)) {
-                rq_1.CommitProceduralPrimitiveHit(10.0);
+            if ((naga_kind == CANDIDATE_PROCEDURAL_PRIMITIVE) && (naga_tmin <=10.0f) && (10.0f <= naga_tcurrentmax)) {
+                rq_1.CommitProceduralPrimitiveHit(10.0f);
         }}
         return;
     } else {

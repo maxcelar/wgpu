@@ -27,7 +27,7 @@ ret_ZeroValuearray1_float_ ZeroValuearray1_float_() {
 
 static float2 v_uv = (float2)0;
 static float2 a_uv_1 = (float2)0;
-static gl_PerVertex unnamed = Constructgl_PerVertex(float4(0.0, 0.0, 0.0, 1.0), 1.0, ZeroValuearray1_float_(), ZeroValuearray1_float_());
+static gl_PerVertex unnamed = Constructgl_PerVertex(float4(0.0f, 0.0f, 0.0f, 1.0f), 1.0f, ZeroValuearray1_float_(), ZeroValuearray1_float_());
 static float2 a_pos_1 = (float2)0;
 
 struct VertexOutput_main {
@@ -40,7 +40,7 @@ void main_1()
     float2 _e6 = a_uv_1;
     v_uv = _e6;
     float2 _e7 = a_pos_1;
-    unnamed.gl_Position = float4(_e7.x, _e7.y, 0.0, 1.0);
+    unnamed.gl_Position = float4(_e7.x, _e7.y, 0.0f, 1.0f);
     return;
 }
 

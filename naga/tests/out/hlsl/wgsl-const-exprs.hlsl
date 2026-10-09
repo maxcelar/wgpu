@@ -9,10 +9,10 @@ static const int TEXTURE_KIND_SKY = int(2);
 static const int FOUR_ALIAS = int(4);
 static const int TEST_CONSTANT_ADDITION = int(8);
 static const int TEST_CONSTANT_ALIAS_ADDITION = int(8);
-static const float PI = 3.141;
-static const float phi_sun = 6.282;
-static const float4 DIV = float4(0.44444445, 0.0, 0.0, 0.0);
-static const float2 add_vec = float2(4.0, 5.0);
+static const float PI = 3.141f;
+static const float phi_sun = 6.282f;
+static const float4 DIV = float4(0.44444445f, 0.0f, 0.0f, 0.0f);
+static const float2 add_vec = float2(4.0f, 5.0f);
 static const bool2 compare_vec = bool2(true, false);
 
 void swizzle_of_compose()
@@ -90,7 +90,7 @@ uint map_texture_kind(int texture_kind)
 
 void compose_of_splat()
 {
-    float4 x_1 = float4(2.0, 1.0, 1.0, 1.0);
+    float4 x_1 = float4(2.0f, 1.0f, 1.0f, 1.0f);
 
     return;
 }
@@ -146,7 +146,7 @@ ret_Constructarray9_int_ Constructarray9_int_(int arg0, int arg1, int arg2, int 
 
 void abstract_access(uint i)
 {
-    float a_1 = 1.0;
+    float a_1 = 1.0f;
     uint b_1 = 1u;
     int c_1 = (int)0;
     int d = (int)0;

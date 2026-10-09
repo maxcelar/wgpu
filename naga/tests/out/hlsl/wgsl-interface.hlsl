@@ -49,7 +49,7 @@ VertexOutput ConstructVertexOutput(float4 arg0, float arg1) {
 VertexOutput_vertex vertex(uint vertex_index : SV_VertexID, uint instance_index : SV_InstanceID, uint color : LOC10)
 {
     uint tmp = (((_NagaConstants.first_vertex + vertex_index) + (_NagaConstants.first_instance + instance_index)) + color);
-    const VertexOutput vertexoutput = ConstructVertexOutput((1.0).xxxx, float(tmp));
+    const VertexOutput vertexoutput = ConstructVertexOutput((1.0f).xxxx, float(tmp));
     const VertexOutput_vertex vertexoutput_1 = { vertexoutput._varying, vertexoutput.position };
     return vertexoutput_1;
 }
@@ -69,7 +69,7 @@ FragmentOutput fragment(FragmentInput_fragment fragmentinput_fragment)
     uint sample_index = fragmentinput_fragment.sample_index_1;
     uint sample_mask = fragmentinput_fragment.sample_mask_1;
     uint mask = (sample_mask & (1u << sample_index));
-    float color_1 = (front_facing ? 1.0 : 0.0);
+    float color_1 = (front_facing ? 1.0f : 0.0f);
     const FragmentOutput fragmentoutput = ConstructFragmentOutput(in_._varying, mask, color_1);
     return fragmentoutput;
 }
@@ -90,5 +90,5 @@ precise float4 vertex_two_structs(Input1_ in1_, Input2_ in2_) : SV_Position
     uint index = 2u;
 
     uint _e8 = index;
-    return float4(float((_NagaConstants.first_vertex + in1_.index)), float((_NagaConstants.first_instance + in2_.index)), float(_e8), 0.0);
+    return float4(float((_NagaConstants.first_vertex + in1_.index)), float((_NagaConstants.first_instance + in2_.index)), float(_e8), 0.0f);
 }

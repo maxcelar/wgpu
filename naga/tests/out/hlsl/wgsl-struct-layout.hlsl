@@ -28,12 +28,12 @@ struct FragmentInput_needs_padding_frag {
 float4 no_padding_frag(FragmentInput_no_padding_frag fragmentinput_no_padding_frag) : SV_Target0
 {
     NoPadding input = { fragmentinput_no_padding_frag.v3_, fragmentinput_no_padding_frag.f3_ };
-    return (0.0).xxxx;
+    return (0.0f).xxxx;
 }
 
 float4 no_padding_vert(NoPadding input_1) : SV_Position
 {
-    return (0.0).xxxx;
+    return (0.0f).xxxx;
 }
 
 NoPadding ConstructNoPadding(float3 arg0, float arg1) {
@@ -58,12 +58,12 @@ void no_padding_comp()
 float4 needs_padding_frag(FragmentInput_needs_padding_frag fragmentinput_needs_padding_frag) : SV_Target0
 {
     NeedsPadding input_2 = { fragmentinput_needs_padding_frag.f3_forces_padding, fragmentinput_needs_padding_frag.v3_needs_padding, fragmentinput_needs_padding_frag.f3_1 };
-    return (0.0).xxxx;
+    return (0.0f).xxxx;
 }
 
 float4 needs_padding_vert(NeedsPadding input_3) : SV_Position
 {
-    return (0.0).xxxx;
+    return (0.0f).xxxx;
 }
 
 NeedsPadding ConstructNeedsPadding(float arg0, float3 arg1, float arg2) {

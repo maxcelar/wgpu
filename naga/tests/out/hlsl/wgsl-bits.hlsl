@@ -185,8 +185,8 @@ void main()
     uint2 u2_ = (0u).xx;
     uint3 u3_ = (0u).xxx;
     uint4 u4_ = (0u).xxxx;
-    float2 f2_ = (0.0).xx;
-    float4 f4_ = (0.0).xxxx;
+    float2 f2_ = (0.0f).xx;
+    float4 f4_ = (0.0f).xxxx;
 
     float4 _e28 = f4_;
     u = uint((int(round(clamp(_e28[0], -1.0, 1.0) * 127.0)) & 0xFF) | ((int(round(clamp(_e28[1], -1.0, 1.0) * 127.0)) & 0xFF) << 8) | ((int(round(clamp(_e28[2], -1.0, 1.0) * 127.0)) & 0xFF) << 16) | ((int(round(clamp(_e28[3], -1.0, 1.0) * 127.0)) & 0xFF) << 24));

@@ -6,6 +6,6 @@ void main()
 
     int _e12 = x0_.x;
     int _e14 = x0_.y;
-    i1_ = ((_e12 < _e14) ? float2(0.0, 1.0) : float2(1.0, 0.0));
+    i1_ = ((_e12 < _e14) ? float2(0.0f, 1.0f) : float2(1.0f, 0.0f));
     return;
 }

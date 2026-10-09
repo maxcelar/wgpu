@@ -157,8 +157,8 @@ half f16_function(half x)
     output.Store(4, asuint(int(-65504)));
     output.Store(0, asuint(65504u));
     output.Store(0, asuint(0u));
-    output.Store(8, asuint(65504.0));
-    output.Store(8, asuint(-65504.0));
+    output.Store(8, asuint(65504.0f));
+    output.Store(8, asuint(-65504.0f));
     half _e51 = input_uniform.val_f16_;
     half _e54 = input_storage.Load<half>(12);
     output.Store(12, (_e51 + _e54));

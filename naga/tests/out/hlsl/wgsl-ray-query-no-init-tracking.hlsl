@@ -85,7 +85,7 @@ RayIntersection query_loop(float3 pos, float3 dir, RaytracingAccelerationStructu
     uint naga_query_init_tracker_for_rq_1 = 0;
 
     {
-        RayDesc_ naga_desc = ConstructRayDesc_(4u, 255u, 0.1, 100.0, pos, dir);
+        RayDesc_ naga_desc = ConstructRayDesc_(4u, 255u, 0.1f, 100.0f, pos, dir);
         rq_1.TraceRayInline(acs, naga_desc.flags, naga_desc.cull_mask, RayDescFromRayDesc_(naga_desc));
     }
     uint2 loop_bound = uint2(4294967295u, 4294967295u);
@@ -107,17 +107,17 @@ RayIntersection query_loop(float3 pos, float3 dir, RaytracingAccelerationStructu
 
 float3 get_torus_normal(float3 world_point, RayIntersection intersection)
 {
-    float3 local_point = mul(float4(world_point, 1.0), intersection.world_to_object);
-    float2 point_on_guiding_line = (normalize(local_point.xy) * 2.4);
-    float3 world_point_on_guiding_line = mul(float4(point_on_guiding_line, 0.0, 1.0), intersection.object_to_world);
+    float3 local_point = mul(float4(world_point, 1.0f), intersection.world_to_object);
+    float2 point_on_guiding_line = (normalize(local_point.xy) * 2.4f);
+    float3 world_point_on_guiding_line = mul(float4(point_on_guiding_line, 0.0f, 1.0f), intersection.object_to_world);
     return normalize((world_point - world_point_on_guiding_line));
 }
 
 [numthreads(1, 1, 1)]
 void main()
 {
-    float3 pos_1 = (0.0).xxx;
-    float3 dir_1 = float3(0.0, 1.0, 0.0);
+    float3 pos_1 = (0.0f).xxx;
+    float3 dir_1 = float3(0.0f, 1.0f, 0.0f);
     const RayIntersection _e7 = query_loop(pos_1, dir_1, acc_struct);
     output.Store(0, asuint(uint((_e7.kind == 0u))));
     const float3 _e18 = get_torus_normal((dir_1 * _e7.t), _e7);
@@ -152,15 +152,15 @@ void main_candidate()
     RayQuery<RAY_FLAG_NONE> rq;
     uint naga_query_init_tracker_for_rq = 0;
 
-    float3 pos_2 = (0.0).xxx;
-    float3 dir_2 = float3(0.0, 1.0, 0.0);
+    float3 pos_2 = (0.0f).xxx;
+    float3 dir_2 = float3(0.0f, 1.0f, 0.0f);
     {
-        RayDesc_ naga_desc = ConstructRayDesc_(4u, 255u, 0.1, 100.0, pos_2, dir_2);
+        RayDesc_ naga_desc = ConstructRayDesc_(4u, 255u, 0.1f, 100.0f, pos_2, dir_2);
         rq.TraceRayInline(acc_struct, naga_desc.flags, naga_desc.cull_mask, RayDescFromRayDesc_(naga_desc));
     }
     RayIntersection intersection_1 = GetCandidateIntersection(rq, naga_query_init_tracker_for_rq);
     if ((intersection_1.kind == 3u)) {
-        rq.CommitProceduralPrimitiveHit(10.0);
+        rq.CommitProceduralPrimitiveHit(10.0f);
         return;
     } else {
         if ((intersection_1.kind == 1u)) {

@@ -45,9 +45,9 @@ Foo ZeroValueFoo() {
     return (Foo)0;
 }
 
-static const float3 const1_ = (0.0).xxx;
-static const float2x2 const3_ = float2x2(float2(0.0, 1.0), float2(2.0, 3.0));
-static const float2x2 const4_[1] = Constructarray1_float2x2_(float2x2(float2(0.0, 1.0), float2(2.0, 3.0)));
+static const float3 const1_ = (0.0f).xxx;
+static const float2x2 const3_ = float2x2(float2(0.0f, 1.0f), float2(2.0f, 3.0f));
+static const float2x2 const4_[1] = Constructarray1_float2x2_(float2x2(float2(0.0f, 1.0f), float2(2.0f, 3.0f)));
 static const bool cz0_ = ZeroValuebool();
 static const int cz1_ = ZeroValueint();
 static const uint cz2_ = ZeroValueuint();
@@ -80,15 +80,15 @@ void main()
 {
     Foo foo = (Foo)0;
 
-    foo = ConstructFoo((1.0).xxxx, int(1));
-    float2x2 m0_ = float2x2(float2(1.0, 0.0), float2(0.0, 1.0));
-    float4x4 m1_ = float4x4(float4(1.0, 0.0, 0.0, 0.0), float4(0.0, 1.0, 0.0, 0.0), float4(0.0, 0.0, 1.0, 0.0), float4(0.0, 0.0, 0.0, 1.0));
+    foo = ConstructFoo((1.0f).xxxx, int(1));
+    float2x2 m0_ = float2x2(float2(1.0f, 0.0f), float2(0.0f, 1.0f));
+    float4x4 m1_ = float4x4(float4(1.0f, 0.0f, 0.0f, 0.0f), float4(0.0f, 1.0f, 0.0f, 0.0f), float4(0.0f, 0.0f, 1.0f, 0.0f), float4(0.0f, 0.0f, 0.0f, 1.0f));
     uint2 zvc8_ = uint2(0u, 0u);
-    float2 zvc9_ = float2(0.0, 0.0);
+    float2 zvc9_ = float2(0.0f, 0.0f);
     uint2 cit0_ = (0u).xx;
-    float2x2 cit1_ = float2x2((0.0).xx, (0.0).xx);
+    float2x2 cit1_ = float2x2((0.0f).xx, (0.0f).xx);
     int cit2_[4] = Constructarray4_int_(int(0), int(1), int(2), int(3));
     uint2 ic4_ = uint2(0u, 0u);
-    float2x3 ic5_ = float2x3(float3(0.0, 0.0, 0.0), float3(0.0, 0.0, 0.0));
+    float2x3 ic5_ = float2x3(float3(0.0f, 0.0f, 0.0f), float3(0.0f, 0.0f, 0.0f));
     return;
 }

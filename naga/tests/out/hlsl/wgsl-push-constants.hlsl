@@ -22,7 +22,7 @@ struct FragmentInput_main {
 float4 vert_main(float2 pos : LOC0, uint ii : SV_InstanceID, uint vi : SV_VertexID) : SV_Position
 {
     float _e8 = im.multiplier;
-    return float4((((float((_NagaConstants.first_instance + ii)) * float((_NagaConstants.first_vertex + vi))) * _e8) * pos), 0.0, 1.0);
+    return float4((((float((_NagaConstants.first_instance + ii)) * float((_NagaConstants.first_vertex + vi))) * _e8) * pos), 0.0f, 1.0f);
 }
 
 float4 main(FragmentInput_main fragmentinput_main) : SV_Target0

@@ -20,7 +20,7 @@ struct Light {
     float4 color;
 };
 
-static const float3 c_ambient = float3(0.05, 0.05, 0.05);
+static const float3 c_ambient = float3(0.05f, 0.05f, 0.05f);
 static const uint c_max_lights = 10u;
 
 cbuffer u_globals : register(b0) { Globals u_globals; }
@@ -53,12 +53,12 @@ struct FragmentInput_fs_main_without_storage {
 
 float fetch_shadow(uint light_id, float4 homogeneous_coords)
 {
-    if ((homogeneous_coords.w <= 0.0)) {
-        return 1.0;
+    if ((homogeneous_coords.w <= 0.0f)) {
+        return 1.0f;
     }
-    float2 flip_correction = float2(0.5, -0.5);
-    float proj_correction = (1.0 / homogeneous_coords.w);
-    float2 light_local = (((homogeneous_coords.xy * flip_correction) * proj_correction) + float2(0.5, 0.5));
+    float2 flip_correction = float2(0.5f, -0.5f);
+    float proj_correction = (1.0f / homogeneous_coords.w);
+    float2 light_local = (((homogeneous_coords.xy * flip_correction) * proj_correction) + float2(0.5f, 0.5f));
     float _e24 = t_shadow.SampleCmpLevelZero(sampler_shadow, float3(light_local, int(light_id)), (homogeneous_coords.z * proj_correction));
     return _e24;
 }
@@ -117,14 +117,14 @@ float4 fs_main(FragmentInput_fs_main fragmentinput_fs_main) : SV_Target0
             uint _e19 = i;
             const float _e23 = fetch_shadow(_e19, mul(in_.world_position, light.proj));
             float3 light_dir = normalize((light.pos.xyz - in_.world_position.xyz));
-            float diffuse = max(0.0, dot(normal_1, light_dir));
+            float diffuse = max(0.0f, dot(normal_1, light_dir));
             float3 _e33 = color;
             color = (_e33 + ((_e23 * diffuse) * light.color.xyz));
         }
     }
     float3 _e42 = color;
     float4 _e47 = u_entity.color;
-    return (float4(_e42, 1.0) * _e47);
+    return (float4(_e42, 1.0f) * _e47);
 }
 
 float4 fs_main_without_storage(FragmentInput_fs_main_without_storage fragmentinput_fs_main_without_storage) : SV_Target0
@@ -156,12 +156,12 @@ float4 fs_main_without_storage(FragmentInput_fs_main_without_storage fragmentinp
             uint _e19 = i_1;
             const float _e23 = fetch_shadow(_e19, mul(in_1.world_position, light_1.proj));
             float3 light_dir_1 = normalize((light_1.pos.xyz - in_1.world_position.xyz));
-            float diffuse_1 = max(0.0, dot(normal_2, light_dir_1));
+            float diffuse_1 = max(0.0f, dot(normal_2, light_dir_1));
             float3 _e33 = color_1;
             color_1 = (_e33 + ((_e23 * diffuse_1) * light_1.color.xyz));
         }
     }
     float3 _e42 = color_1;
     float4 _e47 = u_entity.color;
-    return (float4(_e42, 1.0) * _e47);
+    return (float4(_e42, 1.0f) * _e47);
 }

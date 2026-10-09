@@ -51,7 +51,7 @@ void test_atomic_compare_exchange_i32_()
                 }
                 {
                     int _e14 = old;
-                    int new_ = asint((asfloat(_e14) + 1.0));
+                    int new_ = asint((asfloat(_e14) + 1.0f));
                     uint _e20 = i;
                     int _e22 = old;
                     _atomic_compare_exchange_result_Sint_4_ _e23; arr_i32_.InterlockedCompareExchange(_e20*4, _e22, new_, _e23.old_value);
@@ -103,7 +103,7 @@ void test_atomic_compare_exchange_u32_()
                 }
                 {
                     uint _e14 = old_1;
-                    uint new_1 = asuint((asfloat(_e14) + 1.0));
+                    uint new_1 = asuint((asfloat(_e14) + 1.0f));
                     uint _e20 = i_1;
                     uint _e22 = old_1;
                     _atomic_compare_exchange_result_Uint_4_ _e23; arr_u32_.InterlockedCompareExchange(_e20*4, _e22, new_1, _e23.old_value);
