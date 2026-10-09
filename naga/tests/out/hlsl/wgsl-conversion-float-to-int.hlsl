@@ -1,7 +1,7 @@
 static const half MIN_F16_ = -65504.0h;
 static const half MAX_F16_ = 65504.0h;
-static const float MIN_F32_ = -3.4028235e38;
-static const float MAX_F32_ = 3.4028235e38;
+static const float MIN_F32_ = -3.4028235e38f;
+static const float MAX_F32_ = 3.4028235e38f;
 static const double MIN_F64_ = -1.7976931348623157e308L;
 static const double MAX_F64_ = 1.7976931348623157e308L;
 
@@ -76,7 +76,7 @@ uint64_t test_f16_to_u64_(half f_3)
 }
 
 int naga_f2i32(float value) {
-    return int(clamp(value, -2147483600.0, 2147483500.0));
+    return int(clamp(value, -2147483600.0f, 2147483500.0f));
 }
 
 int test_f32_to_i32_(float f_4)
@@ -85,7 +85,7 @@ int test_f32_to_i32_(float f_4)
 }
 
 uint naga_f2u32(float value) {
-    return uint(clamp(value, 0.0, 4294967000.0));
+    return uint(clamp(value, 0.0f, 4294967000.0f));
 }
 
 uint test_f32_to_u32_(float f_5)
@@ -94,7 +94,7 @@ uint test_f32_to_u32_(float f_5)
 }
 
 int64_t naga_f2i64(float value) {
-    return int64_t(clamp(value, -9.223372e18, 9.2233715e18));
+    return int64_t(clamp(value, -9.223372e18f, 9.2233715e18f));
 }
 
 int64_t test_f32_to_i64_(float f_6)
@@ -103,7 +103,7 @@ int64_t test_f32_to_i64_(float f_6)
 }
 
 uint64_t naga_f2u64(float value) {
-    return uint64_t(clamp(value, 0.0, 1.8446743e19));
+    return uint64_t(clamp(value, 0.0f, 1.8446743e19f));
 }
 
 uint64_t test_f32_to_u64_(float f_7)
@@ -184,7 +184,7 @@ uint64_t2 test_f16_to_u64_vec(half2 f_15)
 }
 
 int2 naga_f2i32(float2 value) {
-    return int2(clamp(value, -2147483600.0, 2147483500.0));
+    return int2(clamp(value, -2147483600.0f, 2147483500.0f));
 }
 
 int2 test_f32_to_i32_vec(float2 f_16)
@@ -193,7 +193,7 @@ int2 test_f32_to_i32_vec(float2 f_16)
 }
 
 uint2 naga_f2u32(float2 value) {
-    return uint2(clamp(value, 0.0, 4294967000.0));
+    return uint2(clamp(value, 0.0f, 4294967000.0f));
 }
 
 uint2 test_f32_to_u32_vec(float2 f_17)
@@ -202,7 +202,7 @@ uint2 test_f32_to_u32_vec(float2 f_17)
 }
 
 int64_t2 naga_f2i64(float2 value) {
-    return int64_t2(clamp(value, -9.223372e18, 9.2233715e18));
+    return int64_t2(clamp(value, -9.223372e18f, 9.2233715e18f));
 }
 
 int64_t2 test_f32_to_i64_vec(float2 f_18)
@@ -211,7 +211,7 @@ int64_t2 test_f32_to_i64_vec(float2 f_18)
 }
 
 uint64_t2 naga_f2u64(float2 value) {
-    return uint64_t2(clamp(value, 0.0, 1.8446743e19));
+    return uint64_t2(clamp(value, 0.0f, 1.8446743e19f));
 }
 
 uint64_t2 test_f32_to_u64_vec(float2 f_19)
@@ -263,10 +263,10 @@ void main()
     const uint _e3 = test_f16_to_u32_(1.0h);
     const int64_t _e5 = test_f16_to_i64_(1.0h);
     const uint64_t _e7 = test_f16_to_u64_(1.0h);
-    const int _e9 = test_f32_to_i32_(1.0);
-    const uint _e11 = test_f32_to_u32_(1.0);
-    const int64_t _e13 = test_f32_to_i64_(1.0);
-    const uint64_t _e15 = test_f32_to_u64_(1.0);
+    const int _e9 = test_f32_to_i32_(1.0f);
+    const uint _e11 = test_f32_to_u32_(1.0f);
+    const int64_t _e13 = test_f32_to_i64_(1.0f);
+    const uint64_t _e15 = test_f32_to_u64_(1.0f);
     const int _e17 = test_f64_to_i32_(1.0L);
     const uint _e19 = test_f64_to_u32_(1.0L);
     const int64_t _e21 = test_f64_to_i64_(1.0L);
@@ -275,10 +275,10 @@ void main()
     const uint2 _e31 = test_f16_to_u32_vec(half2(1.0h, 2.0h));
     const int64_t2 _e35 = test_f16_to_i64_vec(half2(1.0h, 2.0h));
     const uint64_t2 _e39 = test_f16_to_u64_vec(half2(1.0h, 2.0h));
-    const int2 _e43 = test_f32_to_i32_vec(float2(1.0, 2.0));
-    const uint2 _e47 = test_f32_to_u32_vec(float2(1.0, 2.0));
-    const int64_t2 _e51 = test_f32_to_i64_vec(float2(1.0, 2.0));
-    const uint64_t2 _e55 = test_f32_to_u64_vec(float2(1.0, 2.0));
+    const int2 _e43 = test_f32_to_i32_vec(float2(1.0f, 2.0f));
+    const uint2 _e47 = test_f32_to_u32_vec(float2(1.0f, 2.0f));
+    const int64_t2 _e51 = test_f32_to_i64_vec(float2(1.0f, 2.0f));
+    const uint64_t2 _e55 = test_f32_to_u64_vec(float2(1.0f, 2.0f));
     const int2 _e59 = test_f64_to_i32_vec(double2(1.0L, 2.0L));
     const uint2 _e63 = test_f64_to_u32_vec(double2(1.0L, 2.0L));
     const int64_t2 _e67 = test_f64_to_i64_vec(double2(1.0L, 2.0L));

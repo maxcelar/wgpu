@@ -18,8 +18,8 @@ void csLoad()
 [numthreads(1, 1, 1)]
 void csStore()
 {
-    s_r_w[(0u).xx] = (0.0).xxxx;
-    s_rg_w[(0u).xx] = (0.0).xxxx;
-    s_rgba_w[(0u).xx] = (0.0).xxxx;
+    s_r_w[(0u).xx] = (0.0f).xxxx;
+    s_rg_w[(0u).xx] = (0.0f).xxxx;
+    s_rgba_w[(0u).xx] = (0.0f).xxxx;
     return;
 }

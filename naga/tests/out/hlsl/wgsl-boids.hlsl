@@ -24,9 +24,9 @@ void main(uint3 global_invocation_id : SV_DispatchThreadID)
 {
     float2 vPos = (float2)0;
     float2 vVel = (float2)0;
-    float2 cMass = float2(0.0, 0.0);
-    float2 cVel = float2(0.0, 0.0);
-    float2 colVel = float2(0.0, 0.0);
+    float2 cMass = float2(0.0f, 0.0f);
+    float2 cVel = float2(0.0f, 0.0f);
+    float2 colVel = float2(0.0f, 0.0f);
     int cMassCount = int(0);
     int cVelCount = int(0);
     float2 pos = (float2)0;
@@ -118,26 +118,26 @@ void main(uint3 global_invocation_id : SV_DispatchThreadID)
     vVel = (((_e112 + (_e113 * _e116)) + (_e119 * _e122)) + (_e125 * _e128));
     float2 _e131 = vVel;
     float2 _e133 = vVel;
-    vVel = (normalize(_e131) * clamp(length(_e133), 0.0, 0.1));
+    vVel = (normalize(_e131) * clamp(length(_e133), 0.0f, 0.1f));
     float2 _e139 = vPos;
     float2 _e140 = vVel;
     float _e143 = params.deltaT;
     vPos = (_e139 + (_e140 * _e143));
     float _e147 = vPos.x;
-    if ((_e147 < -1.0)) {
-        vPos.x = 1.0;
+    if ((_e147 < -1.0f)) {
+        vPos.x = 1.0f;
     }
     float _e153 = vPos.x;
-    if ((_e153 > 1.0)) {
-        vPos.x = -1.0;
+    if ((_e153 > 1.0f)) {
+        vPos.x = -1.0f;
     }
     float _e159 = vPos.y;
-    if ((_e159 < -1.0)) {
-        vPos.y = 1.0;
+    if ((_e159 < -1.0f)) {
+        vPos.y = 1.0f;
     }
     float _e165 = vPos.y;
-    if ((_e165 > 1.0)) {
-        vPos.y = -1.0;
+    if ((_e165 > 1.0f)) {
+        vPos.y = -1.0f;
     }
     float2 _e174 = vPos;
     particlesDst.Store2(0+index*16+0, asuint(_e174));

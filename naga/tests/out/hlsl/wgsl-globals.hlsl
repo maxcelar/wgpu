@@ -86,19 +86,19 @@ void test_msl_packed_vec3_()
 {
     int idx = int(1);
 
-    alignment.Store3(0, asuint((1.0).xxx));
-    alignment.Store(0+0, asuint(1.0));
-    alignment.Store(0+0, asuint(2.0));
+    alignment.Store3(0, asuint((1.0f).xxx));
+    alignment.Store(0+0, asuint(1.0f));
+    alignment.Store(0+0, asuint(2.0f));
     int _e16 = idx;
-    alignment.Store(_e16*4+0, asuint(3.0));
+    alignment.Store(_e16*4+0, asuint(3.0f));
     FooStruct data = ConstructFooStruct(asfloat(alignment.Load3(0)), asfloat(alignment.Load(12)));
     float3 l0_ = data.v3_;
     float2 l1_ = data.v3_.zx;
     test_msl_packed_vec3_as_arg(data.v3_);
     float3 mvm0_ = mul(ZeroValuefloat3x3(), data.v3_);
     float3 mvm1_ = mul(data.v3_, ZeroValuefloat3x3());
-    float3 svm0_ = (data.v3_ * 2.0);
-    float3 svm1_ = (2.0 * data.v3_);
+    float3 svm0_ = (data.v3_ * 2.0f);
+    float3 svm1_ = (2.0f * data.v3_);
     return;
 }
 
@@ -117,7 +117,7 @@ void main(uint local_invocation_index : SV_GroupIndex)
         at_1 = (uint)0;
     }
     GroupMemoryBarrierWithGroupSync();
-    float Foo = 1.0;
+    float Foo = 1.0f;
     bool at = true;
 
     test_msl_packed_vec3_();
@@ -135,7 +135,7 @@ void main(uint local_invocation_index : SV_GroupIndex)
     wg[3] = _e37;
     float _e43 = asfloat(alignment.Load(0+0));
     wg[2] = _e43;
-    alignment.Store(12, asuint(4.0));
+    alignment.Store(12, asuint(4.0f));
     wg[1] = float(((NagaBufferLength(dummy) - 0) / 8));
     { uint dummy_1 = 0; InterlockedExchange(at_1, 2u, dummy_1); }
     return;

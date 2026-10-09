@@ -24,7 +24,7 @@ VertexOut ConstructVertexOut(float4 arg0, float arg1, float4 arg2, float arg3, f
 
 VertexOutput_vs_main vs_main()
 {
-    const VertexOut vertexout = ConstructVertexOut((1.0).xxxx, 1.0, (2.0).xxxx, 1.0, 0.5);
+    const VertexOut vertexout = ConstructVertexOut((1.0f).xxxx, 1.0f, (2.0f).xxxx, 1.0f, 0.5f);
     const VertexOutput_vs_main vertexout_1 = { vertexout.value, vertexout.value2_, vertexout.position };
     return vertexout_1;
 }

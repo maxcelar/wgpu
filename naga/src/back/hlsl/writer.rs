@@ -3613,7 +3613,15 @@ impl<'a, W: fmt::Write> super::Writer<'a, W> {
     pub(super) fn write_literal(&mut self, literal: crate::Literal) -> BackendResult {
         match literal {
             crate::Literal::F64(value) => write!(self.out, "{value:?}L")?,
-            crate::Literal::F32(value) => write!(self.out, "{value:?}")?,
+            // The `f` suffix is not cosmetic. An unsuffixed HLSL literal is a
+            // "literal float" whose type is fixed by its context, and where nothing
+            // in the context is `float` -- `cond ? (3.14).xxx : (0.0).xxx` -- DXC
+            // types it as `double`. With optimisation on the double folds away;
+            // under `-Od` (which wgpu passes for `InstanceFlags::DEBUG`) the DXIL
+            // keeps `select double` + `fptrunc` and the double-precision shader
+            // flag, and a device without FP64 shader ops (Intel Xe iGPUs) refuses
+            // the pipeline with E_INVALIDARG. An `F32` literal is a `float`; say so.
+            crate::Literal::F32(value) => write!(self.out, "{value:?}f")?,
             crate::Literal::F16(value) => write!(self.out, "{value:?}h")?,
             crate::Literal::U16(value) => write!(self.out, "uint16_t({value})")?,
             crate::Literal::I16(value) => write!(self.out, "int16_t({value})")?,

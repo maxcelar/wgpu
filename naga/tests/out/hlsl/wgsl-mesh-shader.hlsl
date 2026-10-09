@@ -82,8 +82,8 @@ void helper_writer(bool value)
 
 uint3 _ts_main(uint local_invocation_index : SV_GroupIndex)
 {
-    workgroupData = 1.0;
-    taskPayload.colorMask = float4(1.0, 1.0, 0.0, 1.0);
+    workgroupData = 1.0f;
+    taskPayload.colorMask = float4(1.0f, 1.0f, 0.0f, 1.0f);
     helper_writer(true);
     const bool _e12 = helper_reader(taskPayload);
     taskPayload.visible = _e12;
@@ -113,7 +113,7 @@ void ts_main(uint local_invocation_index : SV_GroupIndex) {
 uint3 _ts_divergent(uint3 thread_id : SV_GroupThreadID, uint local_invocation_index_1 : SV_GroupIndex)
 {
     if ((thread_id.x == 0u)) {
-        taskPayload.colorMask = float4(1.0, 1.0, 0.0, 1.0);
+        taskPayload.colorMask = float4(1.0f, 1.0f, 0.0f, 1.0f);
         taskPayload.visible = true;
         return uint3(1u, 1u, 1u);
     }
@@ -143,20 +143,20 @@ void _ms_main(in TaskPayload taskPayload, uint local_invocation_index_2 : SV_Gro
 {
     mesh_output.vertex_count = 3u;
     mesh_output.primitive_count = 1u;
-    workgroupData = 2.0;
-    mesh_output.vertices_[0].position = float4(0.0, 1.0, 0.0, 1.0);
+    workgroupData = 2.0f;
+    mesh_output.vertices_[0].position = float4(0.0f, 1.0f, 0.0f, 1.0f);
     float4 _e23 = taskPayload.colorMask;
-    mesh_output.vertices_[0].color = (float4(0.0, 1.0, 0.0, 1.0) * _e23);
-    mesh_output.vertices_[1].position = float4(-1.0, -1.0, 0.0, 1.0);
+    mesh_output.vertices_[0].color = (float4(0.0f, 1.0f, 0.0f, 1.0f) * _e23);
+    mesh_output.vertices_[1].position = float4(-1.0f, -1.0f, 0.0f, 1.0f);
     float4 _e45 = taskPayload.colorMask;
-    mesh_output.vertices_[1].color = (float4(0.0, 0.0, 1.0, 1.0) * _e45);
-    mesh_output.vertices_[2].position = float4(1.0, -1.0, 0.0, 1.0);
+    mesh_output.vertices_[1].color = (float4(0.0f, 0.0f, 1.0f, 1.0f) * _e45);
+    mesh_output.vertices_[2].position = float4(1.0f, -1.0f, 0.0f, 1.0f);
     float4 _e67 = taskPayload.colorMask;
-    mesh_output.vertices_[2].color = (float4(1.0, 0.0, 0.0, 1.0) * _e67);
+    mesh_output.vertices_[2].color = (float4(1.0f, 0.0f, 0.0f, 1.0f) * _e67);
     mesh_output.primitives_[0].indices_ = uint3(0u, 1u, 2u);
     const bool _e86 = helper_reader(taskPayload);
     mesh_output.primitives_[0].cull = !(_e86);
-    mesh_output.primitives_[0].colorMask = float4(1.0, 0.0, 1.0, 1.0);
+    mesh_output.primitives_[0].colorMask = float4(1.0f, 0.0f, 1.0f, 1.0f);
     return;
 }
 [numthreads(1, 1, 1)]
@@ -185,16 +185,16 @@ void _ms_no_ts(uint local_invocation_index_3 : SV_GroupIndex)
 {
     mesh_output.vertex_count = 3u;
     mesh_output.primitive_count = 1u;
-    workgroupData = 2.0;
-    mesh_output.vertices_[0].position = float4(0.0, 1.0, 0.0, 1.0);
-    mesh_output.vertices_[0].color = float4(0.0, 1.0, 0.0, 1.0);
-    mesh_output.vertices_[1].position = float4(-1.0, -1.0, 0.0, 1.0);
-    mesh_output.vertices_[1].color = float4(0.0, 0.0, 1.0, 1.0);
-    mesh_output.vertices_[2].position = float4(1.0, -1.0, 0.0, 1.0);
-    mesh_output.vertices_[2].color = float4(1.0, 0.0, 0.0, 1.0);
+    workgroupData = 2.0f;
+    mesh_output.vertices_[0].position = float4(0.0f, 1.0f, 0.0f, 1.0f);
+    mesh_output.vertices_[0].color = float4(0.0f, 1.0f, 0.0f, 1.0f);
+    mesh_output.vertices_[1].position = float4(-1.0f, -1.0f, 0.0f, 1.0f);
+    mesh_output.vertices_[1].color = float4(0.0f, 0.0f, 1.0f, 1.0f);
+    mesh_output.vertices_[2].position = float4(1.0f, -1.0f, 0.0f, 1.0f);
+    mesh_output.vertices_[2].color = float4(1.0f, 0.0f, 0.0f, 1.0f);
     mesh_output.primitives_[0].indices_ = uint3(0u, 1u, 2u);
     mesh_output.primitives_[0].cull = false;
-    mesh_output.primitives_[0].colorMask = float4(1.0, 0.0, 1.0, 1.0);
+    mesh_output.primitives_[0].colorMask = float4(1.0f, 0.0f, 1.0f, 1.0f);
     return;
 }
 [numthreads(1, 1, 1)]
@@ -224,16 +224,16 @@ void _ms_divergent(uint3 thread_id_1 : SV_GroupThreadID, uint local_invocation_i
     if ((thread_id_1.x == 0u)) {
         mesh_output.vertex_count = 3u;
         mesh_output.primitive_count = 1u;
-        workgroupData = 2.0;
-        mesh_output.vertices_[0].position = float4(0.0, 1.0, 0.0, 1.0);
-        mesh_output.vertices_[0].color = float4(0.0, 1.0, 0.0, 1.0);
-        mesh_output.vertices_[1].position = float4(-1.0, -1.0, 0.0, 1.0);
-        mesh_output.vertices_[1].color = float4(0.0, 0.0, 1.0, 1.0);
-        mesh_output.vertices_[2].position = float4(1.0, -1.0, 0.0, 1.0);
-        mesh_output.vertices_[2].color = float4(1.0, 0.0, 0.0, 1.0);
+        workgroupData = 2.0f;
+        mesh_output.vertices_[0].position = float4(0.0f, 1.0f, 0.0f, 1.0f);
+        mesh_output.vertices_[0].color = float4(0.0f, 1.0f, 0.0f, 1.0f);
+        mesh_output.vertices_[1].position = float4(-1.0f, -1.0f, 0.0f, 1.0f);
+        mesh_output.vertices_[1].color = float4(0.0f, 0.0f, 1.0f, 1.0f);
+        mesh_output.vertices_[2].position = float4(1.0f, -1.0f, 0.0f, 1.0f);
+        mesh_output.vertices_[2].color = float4(1.0f, 0.0f, 0.0f, 1.0f);
         mesh_output.primitives_[0].indices_ = uint3(0u, 1u, 2u);
         mesh_output.primitives_[0].cull = false;
-        mesh_output.primitives_[0].colorMask = float4(1.0, 0.0, 1.0, 1.0);
+        mesh_output.primitives_[0].colorMask = float4(1.0f, 0.0f, 1.0f, 1.0f);
         return;
     } else {
         return;

@@ -12,6 +12,6 @@ FragmentOutput ConstructFragmentOutput(float4 arg0, float4 arg1) {
 
 FragmentOutput main()
 {
-    const FragmentOutput fragmentoutput = ConstructFragmentOutput(float4(0.4, 0.3, 0.2, 0.1), float4(0.9, 0.8, 0.7, 0.6));
+    const FragmentOutput fragmentoutput = ConstructFragmentOutput(float4(0.4f, 0.3f, 0.2f, 0.1f), float4(0.9f, 0.8f, 0.7f, 0.6f));
     return fragmentoutput;
 }

@@ -65,16 +65,16 @@ _frexp_result_vec4_f32_ naga_frexp(float4 arg) {
 
 void main()
 {
-    float4 v = (0.0).xxxx;
-    float a = degrees(1.0);
-    float b = radians(1.0);
+    float4 v = (0.0f).xxxx;
+    float a = degrees(1.0f);
+    float b = radians(1.0f);
     float4 c = degrees(v);
     float4 d = radians(v);
     float4 e = saturate(v);
-    float4 g = refract(v, v, 1.0);
+    float4 g = refract(v, v, 1.0f);
     int4 sign_b = int4(int(-1), int(-1), int(-1), int(-1));
-    float4 sign_d = float4(-1.0, -1.0, -1.0, -1.0);
-    float4 sign_e = float4(0.0, 0.0, 0.0, 0.0);
+    float4 sign_d = float4(-1.0f, -1.0f, -1.0f, -1.0f);
+    float4 sign_e = float4(0.0f, 0.0f, 0.0f, 0.0f);
     int2 flb_b = int2(int(-1), int(-1));
     uint2 flb_c = uint2(0u, 0u);
     int2 ftb_c = int2(int(0), int(0));
@@ -85,21 +85,21 @@ void main()
     int2 ctz_h = int2(int(0), int(0));
     int2 clz_c = int2(int(0), int(0));
     uint2 clz_d = uint2(31u, 31u);
-    float lde_a = ldexp(1.0, int(2));
-    float2 lde_b = ldexp(float2(1.0, 2.0), int2(int(3), int(4)));
-    _modf_result_f32_ modf_a = naga_modf(1.5);
-    float modf_b = naga_modf(1.5).fract;
-    float modf_c = naga_modf(1.5).whole;
-    _modf_result_vec2_f32_ modf_d = naga_modf(float2(1.5, 1.5));
-    float modf_e = naga_modf(float4(1.5, 1.5, 1.5, 1.5)).whole.x;
-    float modf_f = naga_modf(float2(1.5, 1.5)).fract.y;
-    _frexp_result_f32_ frexp_a = naga_frexp(1.5);
-    float frexp_b = naga_frexp(1.5).fract;
-    int frexp_c = naga_frexp(1.5).exp_;
-    int frexp_d = naga_frexp(float4(1.5, 1.5, 1.5, 1.5)).exp_.x;
-    float quantizeToF16_a = f16tof32(f32tof16(1.0));
-    float2 quantizeToF16_b = f16tof32(f32tof16(float2(1.0, 1.0)));
-    float3 quantizeToF16_c = f16tof32(f32tof16(float3(1.0, 1.0, 1.0)));
-    float4 quantizeToF16_d = f16tof32(f32tof16(float4(1.0, 1.0, 1.0, 1.0)));
+    float lde_a = ldexp(1.0f, int(2));
+    float2 lde_b = ldexp(float2(1.0f, 2.0f), int2(int(3), int(4)));
+    _modf_result_f32_ modf_a = naga_modf(1.5f);
+    float modf_b = naga_modf(1.5f).fract;
+    float modf_c = naga_modf(1.5f).whole;
+    _modf_result_vec2_f32_ modf_d = naga_modf(float2(1.5f, 1.5f));
+    float modf_e = naga_modf(float4(1.5f, 1.5f, 1.5f, 1.5f)).whole.x;
+    float modf_f = naga_modf(float2(1.5f, 1.5f)).fract.y;
+    _frexp_result_f32_ frexp_a = naga_frexp(1.5f);
+    float frexp_b = naga_frexp(1.5f).fract;
+    int frexp_c = naga_frexp(1.5f).exp_;
+    int frexp_d = naga_frexp(float4(1.5f, 1.5f, 1.5f, 1.5f)).exp_.x;
+    float quantizeToF16_a = f16tof32(f32tof16(1.0f));
+    float2 quantizeToF16_b = f16tof32(f32tof16(float2(1.0f, 1.0f)));
+    float3 quantizeToF16_c = f16tof32(f32tof16(float3(1.0f, 1.0f, 1.0f)));
+    float4 quantizeToF16_d = f16tof32(f32tof16(float4(1.0f, 1.0f, 1.0f, 1.0f)));
     return;
 }

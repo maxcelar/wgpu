@@ -7,9 +7,9 @@ void main()
     uint2 u2_ = (0u).xx;
     uint3 u3_ = (0u).xxx;
     uint4 u4_ = (0u).xxxx;
-    float2 f2_ = (0.0).xx;
-    float3 f3_ = (0.0).xxx;
-    float4 f4_ = (0.0).xxxx;
+    float2 f2_ = (0.0f).xx;
+    float3 f3_ = (0.0f).xxx;
+    float4 f4_ = (0.0f).xxxx;
 
     int2 _e27 = i2_;
     u2_ = asuint(_e27);

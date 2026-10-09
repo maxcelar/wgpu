@@ -136,7 +136,7 @@ void SetMatScalarmOnBaz(Baz obj, float scalar, uint mat_idx, uint vec_idx) {
 void test_matrix_within_struct_accesses()
 {
     int idx = int(1);
-    Baz t = ConstructBaz(float3x2((1.0).xx, (2.0).xx, (3.0).xx));
+    Baz t = ConstructBaz(float3x2((1.0f).xx, (2.0f).xx, (3.0f).xx));
 
     int _e3 = idx;
     idx = asint(asuint(_e3) - asuint(int(1)));
@@ -154,18 +154,18 @@ void test_matrix_within_struct_accesses()
     float l6_ = GetMatmOnBaz(baz)[_e36][_e38];
     int _e51 = idx;
     idx = asint(asuint(_e51) + asuint(int(1)));
-    SetMatmOnBaz(t, float3x2((6.0).xx, (5.0).xx, (4.0).xx));
-    t.m_0 = (9.0).xx;
+    SetMatmOnBaz(t, float3x2((6.0f).xx, (5.0f).xx, (4.0f).xx));
+    t.m_0 = (9.0f).xx;
     int _e66 = idx;
-    SetMatVecmOnBaz(t, (90.0).xx, _e66);
-    t.m_0[1] = 10.0;
+    SetMatVecmOnBaz(t, (90.0f).xx, _e66);
+    t.m_0[1] = 10.0f;
     int _e76 = idx;
-    t.m_0[_e76] = 20.0;
+    t.m_0[_e76] = 20.0f;
     int _e80 = idx;
-    SetMatScalarmOnBaz(t, 30.0, _e80, 1);
+    SetMatScalarmOnBaz(t, 30.0f, _e80, 1);
     int _e85 = idx;
     int _e87 = idx;
-    SetMatScalarmOnBaz(t, 40.0, _e85, _e87);
+    SetMatScalarmOnBaz(t, 40.0f, _e85, _e87);
     return;
 }
 
@@ -203,18 +203,18 @@ void test_matrix_within_array_within_struct_accesses()
     int _e55 = idx_1;
     idx_1 = asint(asuint(_e55) + asuint(int(1)));
     t_1.am = (__mat4x2_f32[2])ZeroValuearray2_float4x2_();
-    t_1.am[0] = (__mat4x2_f32)float4x2((8.0).xx, (7.0).xx, (6.0).xx, (5.0).xx);
-    t_1.am[0]._0 = (9.0).xx;
+    t_1.am[0] = (__mat4x2_f32)float4x2((8.0f).xx, (7.0f).xx, (6.0f).xx, (5.0f).xx);
+    t_1.am[0]._0 = (9.0f).xx;
     int _e77 = idx_1;
-    __set_col_of_mat4x2_f32(t_1.am[0], _e77, (90.0).xx);
-    t_1.am[0]._0.y = 10.0;
+    __set_col_of_mat4x2_f32(t_1.am[0], _e77, (90.0f).xx);
+    t_1.am[0]._0.y = 10.0f;
     int _e89 = idx_1;
-    t_1.am[0]._0[min(uint(_e89), 1u)] = 20.0;
+    t_1.am[0]._0[min(uint(_e89), 1u)] = 20.0f;
     int _e94 = idx_1;
-    __set_el_of_mat4x2_f32(t_1.am[0], _e94, 1, 30.0);
+    __set_el_of_mat4x2_f32(t_1.am[0], _e94, 1, 30.0f);
     int _e100 = idx_1;
     int _e102 = idx_1;
-    __set_el_of_mat4x2_f32(t_1.am[0], _e100, _e102, 40.0);
+    __set_el_of_mat4x2_f32(t_1.am[0], _e100, _e102, 40.0f);
     return;
 }
 
@@ -243,14 +243,14 @@ ret_Constructarray2_float4_ Constructarray2_float4_(float4 arg0, float4 arg1) {
 
 void assign_array_through_ptr_fn(inout float4 foo_2[2])
 {
-    foo_2 = Constructarray2_float4_((1.0).xxxx, (2.0).xxxx);
+    foo_2 = Constructarray2_float4_((1.0f).xxxx, (2.0f).xxxx);
     return;
 }
 
 void assign_through_ptr()
 {
     uint val = 33u;
-    float4 arr[2] = Constructarray2_float4_((6.0).xxxx, (7.0).xxxx);
+    float4 arr[2] = Constructarray2_float4_((6.0f).xxxx, (7.0f).xxxx);
 
     assign_through_ptr_fn(val);
     assign_array_through_ptr_fn(arr);
@@ -365,7 +365,7 @@ ret_ZeroValuearray5_array10_float__ ZeroValuearray5_array10_float__() {
 }
 
 int naga_f2i32(float value) {
-    return int(clamp(value, -2147483600.0, 2147483500.0));
+    return int(clamp(value, -2147483600.0f, 2147483500.0f));
 }
 
 typedef uint2 ret_Constructarray2_uint2_[2];
@@ -383,11 +383,11 @@ uint NagaBufferLengthRW(RWByteAddressBuffer buffer)
 
 float4 foo_vert(uint vi : SV_VertexID) : SV_Position
 {
-    float foo = 0.0;
+    float foo = 0.0f;
     int c2_[5] = (int[5])0;
 
     float baz_1 = foo;
-    foo = 1.0;
+    foo = 1.0f;
     GlobalConst phony = msl_padding_global_const;
     test_matrix_within_struct_accesses();
     test_matrix_within_array_within_struct_accesses();
@@ -401,7 +401,7 @@ float4 foo_vert(uint vi : SV_VertexID) : SV_Position
     c2_[min(uint((vi + 1u)), 4u)] = int(42);
     int value_1 = c2_[min(uint(vi), 4u)];
     const float _e49 = test_arr_as_arg(ZeroValuearray5_array10_float__());
-    return float4(mul(float4((value_1).xxxx), _matrix), 2.0);
+    return float4(mul(float4((value_1).xxxx), _matrix), 2.0f);
 }
 
 int2 ZeroValueint2() {
@@ -410,9 +410,9 @@ int2 ZeroValueint2() {
 
 float4 foo_frag() : SV_Target0
 {
-    bar.Store(8+16+0, asuint(1.0));
+    bar.Store(8+16+0, asuint(1.0f));
     {
-        float4x3 _value2 = float4x3((0.0).xxx, (1.0).xxx, (2.0).xxx, (3.0).xxx);
+        float4x3 _value2 = float4x3((0.0f).xxx, (1.0f).xxx, (2.0f).xxx, (3.0f).xxx);
         bar.Store3(0+0, asuint(_value2[0]));
         bar.Store3(0+16, asuint(_value2[1]));
         bar.Store3(0+32, asuint(_value2[2]));
@@ -425,7 +425,7 @@ float4 foo_frag() : SV_Target0
     }
     bar.Store(0+8+160, asuint(int(1)));
     qux.Store2(0, asuint(ZeroValueint2()));
-    return (0.0).xxxx;
+    return (0.0f).xxxx;
 }
 
 [numthreads(1, 1, 1)]

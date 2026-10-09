@@ -1,8 +1,8 @@
 float2 test_fma()
 {
-    float2 a = float2(2.0, 2.0);
-    float2 b = float2(0.5, 0.5);
-    float2 c = float2(0.5, 0.5);
+    float2 a = float2(2.0f, 2.0f);
+    float2 b = float2(0.5f, 0.5f);
+    float2 c = float2(0.5f, 0.5f);
     return mad(a, b, c);
 }
 

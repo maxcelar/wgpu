@@ -20,13 +20,13 @@ ret_ZeroValuearray1_float_ ZeroValuearray1_float_() {
     return (float[1])0;
 }
 
-static type_4 global = Constructtype_4(float4(0.0, 0.0, 0.0, 1.0), 1.0, ZeroValuearray1_float_(), ZeroValuearray1_float_());
+static type_4 global = Constructtype_4(float4(0.0f, 0.0f, 0.0f, 1.0f), 1.0f, ZeroValuearray1_float_(), ZeroValuearray1_float_());
 static int global_1 = (int)0;
 
 void function()
 {
     int _e9 = global_1;
-    global.member = float4(((_e9 == int(0)) ? -4.0 : 1.0), ((_e9 == int(2)) ? 4.0 : -1.0), 0.0, 1.0);
+    global.member = float4(((_e9 == int(0)) ? -4.0f : 1.0f), ((_e9 == int(2)) ? 4.0f : -1.0f), 0.0f, 1.0f);
     return;
 }
 

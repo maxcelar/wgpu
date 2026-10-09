@@ -7,7 +7,7 @@ ret_Constructarray2_float_ Constructarray2_float_(float arg0, float arg1) {
 typedef float ret_ret_array[2];
 ret_ret_array ret_array()
 {
-    return Constructarray2_float_(1.0, 2.0);
+    return Constructarray2_float_(1.0f, 2.0f);
 }
 
 typedef float ret_Constructarray3_array2_float__[3][2];
@@ -28,5 +28,5 @@ ret_ret_array_array ret_array_array()
 float4 main() : SV_Target0
 {
     const float _e0[3][2] = ret_array_array();
-    return float4(_e0[0][0], _e0[0][1], 0.0, 1.0);
+    return float4(_e0[0][0], _e0[0][1], 0.0f, 1.0f);
 }

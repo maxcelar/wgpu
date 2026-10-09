@@ -6,7 +6,7 @@ static const SamplerState Sampler = nagaSamplerHeap[nagaGroup0SamplerIndexArray[
 
 float4 test(Texture2D<float4> Passed_Texture, SamplerState Passed_Sampler)
 {
-    float4 _e5 = Passed_Texture.Sample(Passed_Sampler, float2(0.0, 0.0));
+    float4 _e5 = Passed_Texture.Sample(Passed_Sampler, float2(0.0f, 0.0f));
     return _e5;
 }
 

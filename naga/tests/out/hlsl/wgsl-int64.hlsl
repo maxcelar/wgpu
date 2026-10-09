@@ -54,7 +54,7 @@ RWByteAddressBuffer output : register(u3);
 RWByteAddressBuffer output_arrays : register(u4);
 
 int64_t naga_f2i64(float value) {
-    return int64_t(clamp(value, -9.223372e18, 9.2233715e18));
+    return int64_t(clamp(value, -9.223372e18f, 9.2233715e18f));
 }
 
 typedef int64_t ret_Constructarray2_int64_t_[2];
@@ -148,7 +148,7 @@ int64_t int64_function(int64_t x)
 }
 
 uint64_t naga_f2u64(float value) {
-    return uint64_t(clamp(value, 0.0, 1.8446743e19));
+    return uint64_t(clamp(value, 0.0f, 1.8446743e19f));
 }
 
 typedef uint64_t ret_Constructarray2_uint64_t_[2];

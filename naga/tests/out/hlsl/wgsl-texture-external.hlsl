@@ -140,7 +140,7 @@ float4 test(Texture2D<float4> t_plane0_, Texture2D<float4> t_plane1_, Texture2D<
     float4 c = (float4)0;
     uint2 d = (uint2)0;
 
-    float4 _e4 = nagaTextureSampleBaseClampToEdge(t_plane0_, t_plane1_, t_plane2_, t_params, samp, (0.0).xx);
+    float4 _e4 = nagaTextureSampleBaseClampToEdge(t_plane0_, t_plane1_, t_plane2_, t_params, samp, (0.0f).xx);
     a = _e4;
     float4 _e8 = nagaTextureLoadExternal(t_plane0_, t_plane1_, t_plane2_, t_params, (int(0)).xx);
     b = _e8;

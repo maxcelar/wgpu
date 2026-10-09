@@ -3,7 +3,7 @@ struct VertexOutput {
     float4 position : SV_Position;
 };
 
-static const float c_scale = 1.2;
+static const float c_scale = 1.2f;
 
 Texture2D<float4> u_texture : register(t0);
 SamplerState nagaSamplerHeap[2048]: register(s0, space0);
@@ -29,7 +29,7 @@ VertexOutput ConstructVertexOutput(float2 arg0, float4 arg1) {
 
 VertexOutput_vert_main vert_main(float2 pos : LOC0, float2 uv : LOC1)
 {
-    const VertexOutput vertexoutput = ConstructVertexOutput(uv, float4((c_scale * pos), 0.0, 1.0));
+    const VertexOutput vertexoutput = ConstructVertexOutput(uv, float4((c_scale * pos), 0.0f, 1.0f));
     const VertexOutput_vert_main vertexoutput_1 = { vertexoutput.uv, vertexoutput.position };
     return vertexoutput_1;
 }
@@ -38,7 +38,7 @@ float4 frag_main(FragmentInput_frag_main fragmentinput_frag_main) : SV_Target0
 {
     float2 uv_1 = fragmentinput_frag_main.uv_3;
     float4 color = u_texture.Sample(u_sampler, uv_1);
-    if ((color.w == 0.0)) {
+    if ((color.w == 0.0f)) {
         discard;
     }
     float4 premultiplied = (color.w * color);
@@ -47,5 +47,5 @@ float4 frag_main(FragmentInput_frag_main fragmentinput_frag_main) : SV_Target0
 
 float4 fs_extra() : SV_Target0
 {
-    return float4(0.0, 0.5, 0.0, 0.5);
+    return float4(0.0f, 0.5f, 0.0f, 0.5f);
 }

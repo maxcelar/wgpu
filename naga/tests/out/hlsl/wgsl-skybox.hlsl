@@ -52,7 +52,7 @@ VertexOutput_vs_main vs_main(uint vertex_index : SV_VertexID)
     tmp2_ = (int((_NagaConstants.first_vertex + vertex_index)) & int(1));
     int _e9 = tmp1_;
     int _e15 = tmp2_;
-    float4 pos = float4(((float(_e9) * 4.0) - 1.0), ((float(_e15) * 4.0) - 1.0), 0.0, 1.0);
+    float4 pos = float4(((float(_e9) * 4.0f) - 1.0f), ((float(_e15) * 4.0f) - 1.0f), 0.0f, 1.0f);
     float4 _e27 = r_data.view[0];
     float4 _e32 = r_data.view[1];
     float4 _e37 = r_data.view[2];
