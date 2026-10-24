@@ -23,6 +23,8 @@ pub(super) struct CompilerFxc {
 pub(super) struct CompilerDynamicDxc {
     max_shader_model: wgt::DxcShaderModel,
     compiler: Dxc::IDxcCompiler3,
+    /// `WGPU_DXIL_CACHE_DIR`'s cache of this compiler's output, if it is set.
+    cache: Option<super::dxil_cache::DxilCache>,
     // Has to be held onto for the lifetime of the device otherwise shaders will fail to compile.
     // Only needed when using dynamic linking.
     _dxc: DxcLib,
@@ -47,7 +49,7 @@ impl CompilerContainer {
     }
 
     pub(super) fn new_dynamic_dxc(dxc_path: PathBuf) -> Result<Self, GetContainerError> {
-        let dxc = DxcLib::new_dynamic(dxc_path)
+        let dxc = DxcLib::new_dynamic(dxc_path.clone())
             .map_err(|e| GetContainerError::FailedToLoad("dxcompiler.dll", e))?;
 
         let compiler = dxc.create_instance::<Dxc::IDxcCompiler3>()?;
@@ -60,9 +62,33 @@ impl CompilerContainer {
             }
         }
 
+        let cache = super::dxil_cache::DxilCache::from_env(|| {
+            // The library DXC was loaded from, wherever the search found it, and the `dxil.dll` it signs with:
+            // the one already loaded, else the one beside it.
+            let name = dxc_path
+                .file_name()
+                .and_then(|n| n.to_str())
+                .unwrap_or("dxcompiler.dll");
+            let dxcompiler = loaded_library_path(name);
+            let dxil = loaded_library_path("dxil.dll").or_else(|| {
+                dxcompiler
+                    .as_ref()
+                    .and_then(|p| p.parent())
+                    .map(|dir| dir.join("dxil.dll"))
+            });
+            super::dxil_cache::compiler_identity(
+                (major, minor),
+                &[
+                    ("dxcompiler.dll", dxcompiler.as_deref()),
+                    ("dxil.dll", dxil.as_deref()),
+                ],
+            )
+        });
+
         Ok(Self::DynamicDxc(CompilerDynamicDxc {
             max_shader_model: wgt::DxcShaderModel::from_dxc_version(major, minor),
             compiler,
+            cache,
             _dxc: dxc,
         }))
     }
@@ -123,8 +149,9 @@ impl CompilerContainer {
                 full_stage,
                 fxc,
             ),
-            CompilerContainer::DynamicDxc(CompilerDynamicDxc { compiler, .. })
-            | CompilerContainer::StaticDxc(CompilerStaticDxc { compiler, .. }) => compile_dxc(
+            CompilerContainer::DynamicDxc(CompilerDynamicDxc {
+                compiler, cache, ..
+            }) => compile_dxc(
                 device,
                 source,
                 source_name,
@@ -132,6 +159,18 @@ impl CompilerContainer {
                 stage_bit,
                 full_stage,
                 compiler,
+                cache.as_ref(),
+            ),
+            // The statically linked DXC is not cached: its identity is the binary's, which the cache cannot see.
+            CompilerContainer::StaticDxc(CompilerStaticDxc { compiler, .. }) => compile_dxc(
+                device,
+                source,
+                source_name,
+                raw_ep,
+                stage_bit,
+                full_stage,
+                compiler,
+                None,
             ),
         }
     }
@@ -362,6 +401,17 @@ fn as_err_str(blob: &Dxc::IDxcBlobUtf8) -> Result<&str, crate::DeviceError> {
         .map_err(|_| crate::DeviceError::Unexpected)
 }
 
+/// The full path of the loaded library `name`, if it is loaded.
+fn loaded_library_path(name: &str) -> Option<PathBuf> {
+    use windows::Win32::System::LibraryLoader::{GetModuleFileNameW, GetModuleHandleW};
+    let name = OPCWSTR::new(name);
+    let module = unsafe { GetModuleHandleW(name.ptr()) }.ok()?;
+    let mut path = alloc::vec![0u16; 32768];
+    let len = unsafe { GetModuleFileNameW(Some(module), &mut path) } as usize;
+    (len > 0 && len < path.len()).then(|| PathBuf::from(String::from_utf16_lossy(&path[..len])))
+}
+
+#[allow(clippy::too_many_arguments)]
 fn compile_dxc(
     device: &crate::dx12::Device,
     source: &str,
@@ -370,6 +420,7 @@ fn compile_dxc(
     stage_bit: wgt::ShaderStages,
     full_stage: &str,
     compiler: &Dxc::IDxcCompiler3,
+    cache: Option<&super::dxil_cache::DxilCache>,
 ) -> Result<crate::dx12::CompiledShader, crate::PipelineError> {
     profiling::scope!("compile_dxc");
 
@@ -397,7 +448,7 @@ fn compile_dxc(
         Dxc::DXC_ARG_ENABLE_STRICTNESS,
     ]);
 
-    if device
+    let debug_info = device
         .shared
         .private_caps
         .instance_flags
@@ -406,8 +457,8 @@ fn compile_dxc(
             .shared
             .private_caps
             .workarounds
-            .avoid_shader_debug_info
-    {
+            .avoid_shader_debug_info;
+    if debug_info {
         compile_args.push(Dxc::DXC_ARG_DEBUG);
         compile_args.push(Dxc::DXC_ARG_SKIP_OPTIMIZATIONS);
     }
@@ -417,6 +468,23 @@ fn compile_dxc(
         .intersects(wgt::Features::SHADER_F16 | wgt::Features::SHADER_I16)
     {
         compile_args.push(windows::core::w!("-enable-16bit-types"));
+    }
+
+    // The key is the arguments exactly as DXC is given them. The input file name only reaches the output as debug
+    // information, so it is part of the key only when debug information is asked for.
+    let cache_key = cache.map(|cache| {
+        let skip = usize::from(source_name.is_some() && !debug_info);
+        let args: Vec<String> = compile_args[skip..]
+            .iter()
+            .map(|arg| unsafe { arg.to_string() }.unwrap_or_default())
+            .collect();
+        (cache, cache.key(source, &args))
+    });
+    if let Some((cache, key)) = cache_key {
+        if let Some(dxil) = cache.load(key) {
+            profiling::scope!("dxil cache hit");
+            return Ok(crate::dx12::CompiledShader::Precompiled(dxil));
+        }
     }
 
     let buffer = Dxc::DxcBuffer {
@@ -446,6 +514,13 @@ fn compile_dxc(
     }
 
     let blob = get_output::<Dxc::IDxcBlob>(&compile_res, Dxc::DXC_OUT_OBJECT)?;
+
+    if let Some((cache, key)) = cache_key {
+        let dxil = unsafe {
+            core::slice::from_raw_parts(blob.GetBufferPointer().cast::<u8>(), blob.GetBufferSize())
+        };
+        cache.store(key, dxil);
+    }
 
     Ok(crate::dx12::CompiledShader::Dxc(blob))
 }

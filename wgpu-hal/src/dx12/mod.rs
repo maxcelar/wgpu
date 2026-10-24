@@ -84,6 +84,7 @@ mod dcomp;
 mod descriptor;
 mod device;
 mod device_creation;
+mod dxil_cache;
 mod instance;
 mod pipeline_desc;
 mod sampler;
