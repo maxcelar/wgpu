@@ -1081,6 +1081,13 @@ fn map_wgt_limits(limits: webgpu_sys::GpuSupportedLimits) -> wgt::Limits {
 
 fn map_adapter_info(adapter_info: &webgpu_sys::GpuAdapterInfo) -> wgt::AdapterInfo {
     // TODO(https://github.com/gfx-rs/wgpu/issues/8819): populate more fields if/when possible
+    //
+    // `GPUAdapterInfo.vendor` and `.architecture` are the only identification Chrome exposes
+    // (its `description` is empty), spelled by Dawn's `gpu_info.json` generator: lower-case and
+    // hyphenated, `"nvidia"` / `"ampere"`, `"intel"` / `"gen-12lp"`. They are not a driver, but
+    // `driver` / `driver_info` are the only free-text fields `AdapterInfo` has and this backend
+    // has no driver to report, so they carry the vendor and the architecture; `name` stays the
+    // browser's description (empty where the browser hides it).
     wgt::AdapterInfo {
         name: adapter_info.description().to_string(),
         vendor: 0,
@@ -1091,8 +1098,8 @@ fn map_adapter_info(adapter_info: &webgpu_sys::GpuAdapterInfo) -> wgt::AdapterIn
             wgt::DeviceType::Other
         },
         device_pci_bus_id: String::new(),
-        driver: String::new(),
-        driver_info: String::new(),
+        driver: adapter_info.vendor().to_string(),
+        driver_info: adapter_info.architecture().to_string(),
         backend: wgt::Backend::BrowserWebGpu,
         subgroup_min_size: adapter_info.subgroup_min_size(),
         subgroup_max_size: adapter_info.subgroup_max_size(),
